@@ -6,7 +6,7 @@ data = pd.read_csv('Rank_Model_Residual_2D.csv')
 
 print(data)
 
-def year_fraction(date1, date2):
+def year_fraction(date1, date2): # returns decimal difference between two dates in years
     date1 = datetime.strptime(date1, "%m/%d/%Y")
     date2 = datetime.strptime(date2, "%m/%d/%Y")
     delta = date2 - date1
