@@ -28,11 +28,11 @@ for i in range(len(data.index)):
 
     # final face value payment
     num += years_remaining / ((1+ytm/2)**(years_remaining * 2)) # time of payment, weighted by present value of cash flow
-    den += 1/ ((1+ytm/2)**(years_remaining * 2)) # weight (cash flow value) accures to denominator
+    den += 1/ ((1+ytm/2)**(years_remaining * 2)) # weight (cash flow value) accrues to denominator
 
     while years_remaining > 0: # iterate through all coupon payments
         num += years_remaining * (coupon * 0.5) / ((1+ytm/2)**(years_remaining * 2)) # time of payment weighted by present value of cash flow
-        den += (coupon * 0.5) / ((1+ytm/2)**(years_remaining * 2)) # weight (cash flow value) accures to denominator
+        den += (coupon * 0.5) / ((1+ytm/2)**(years_remaining * 2)) # weight (cash flow value) accrues to denominator
         years_remaining -= 0.5
 
     mac_duration = num / den
