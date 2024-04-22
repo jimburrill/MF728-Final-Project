@@ -116,7 +116,10 @@ class Optimizer:
         weights = result.x
         weights = [w if w > 0.0000001 else 0 for w in weights] # remove negligible weights
         return weights
-
+    
+    def get_data(self):
+        return self.data
+    
 def year_fraction(date1, date2): # computes difference between two dates in years, as a decimal
     date1 = pd.to_datetime(date1)
     date2 = pd.to_datetime(date2)
@@ -162,4 +165,4 @@ if __name__ == "__main__":
     print("\nIspread of portfolio", np.dot(data['Ispread'], weights))
     print("\n\n")
     print("modified dataframe in optimizer (two distance columns and scaled Ispread column added)")
-    print(optimizer.data)
+    print(optimizer.get_data())
