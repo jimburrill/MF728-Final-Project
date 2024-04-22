@@ -73,11 +73,11 @@ class Optimizer:
             #print("Distances have not been computed. Computing distances for each bond.")
             self.compute_distances()
 
-        mispricings = self.data['Filtered_Distance']
+        distances = self.data['Filtered_Distance']
         durations = self.data['Modified_Duration']
 
         def objective_function(weights):
-            return -np.dot(weights, mispricings)
+            return -np.dot(weights, distances)
 
         def weight_sum_constraint(weights):
             return np.sum(weights) - 1  # Sum of weights should be 1
@@ -90,13 +90,10 @@ class Optimizer:
             return 0.05 - weights  # All weights should be under 0.05
 
         # Initial guess for weights
-        initial_guess = np.ones(len(mispricings)) / len(mispricings)
-
-        # Define additional arguments for the objective and constraint functions
-        args = (self.index_duration)
+        initial_guess = np.ones(len(distances)) / len(distances)
 
         # Define bounds for weights (0 to 1)
-        bounds = [(0, 1)] * len(mispricings)
+        bounds = [(0, 1)] * len(distances)
 
         # Define constraints
         constraints = ({'type': 'eq', 'fun': weight_sum_constraint},
