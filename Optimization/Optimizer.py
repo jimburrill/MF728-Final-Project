@@ -14,12 +14,17 @@ class Optimizer:
             self.data = data
             self.index_duration = index_duration
 
+            col = self.data['Ispread']
+            self.data['Ispread_scaled'] = (col - col.mean()) * (self.data['Model_Rank'].std()/col.std()) + col.mean() # subtract out mean, fix standard deviation, add mean back
+            # make 'Ispread' have the same standard deviation as 'Model_rank,' equalizing importance. Can be optimizer later through backtest
+
     def run_regression(self):
         '''
         returns slope and intercept of regression of Ispread vs Model_Rank
         y = mx + b
-        '''
-        y = self.data['Ispread']
+        '''            
+
+        y = self.data['Ispread_scaled']
         X = self.data[['Model_Rank']].copy()
         X['Intercept'] = 1 # create intercept column
         model = sm.OLS(y, X)
@@ -38,16 +43,19 @@ class Optimizer:
         '''
         calculates orthogonal distance from (p,q) to regression line
         using formula (mp - q + b)/sqrt(m^2+1)
+        Will be selecting bonds with the maximum distance.
+        Appends two columns to the global dataframe, Distance and Filtered_Distance, and returns it for good measure
         '''
 
         if 'Distance' in self.data.columns:
-            return 'Distances already computed.'
+            print("Distances already computed. Don'make me compute it again.")
+            return self.data
 
         m, b = self.run_regression()
         distances = []
         for i in range(len(self.data.index)):
             x = self.data.iloc[i]['Model_Rank']
-            y = self.data.iloc[i]['Ispread']
+            y = self.data.iloc[i]['Ispread_scaled']
             distance = self.distance(x, y, m, b)
             distances.append(distance)
         self.data['Distance'] = pd.Series(distances, index = self.data.index) # append column
@@ -62,7 +70,7 @@ class Optimizer:
         '''
         # Use optimizer like last time
         if 'Distance' not in self.data.columns:
-            print("Distances have not been computed. Computing distances for each bond.")
+            #print("Distances have not been computed. Computing distances for each bond.")
             self.compute_distances()
 
         mispricings = self.data['Filtered_Distance']
@@ -109,7 +117,6 @@ class Optimizer:
         weights = [w if w > 0.0000001 else 0 for w in weights] # remove negligible weights
         return weights
 
-
 def year_fraction(date1, date2): # computes difference between two dates in years, as a decimal
     date1 = pd.to_datetime(date1)
     date2 = pd.to_datetime(date2)
@@ -118,9 +125,11 @@ def year_fraction(date1, date2): # computes difference between two dates in year
 
     return years
 
-print(year_fraction('12/31/2023', '10/15/2033'))
 
 if __name__ == "__main__":
+    
+    print(year_fraction('12/31/2023', '10/15/2033')) # testing year fraction method
+
     data = pd.read_csv('Rank_Model_Residual_Duration.csv')
     index_data = pd.read_excel('LUACTRUU Index.xlsx')
     data['Date'] = pd.to_datetime(data['Date']) #normalize dates
@@ -135,16 +144,22 @@ if __name__ == "__main__":
             index_date = index_data.iloc[i]['Date']
             break
 
-    print("date of index to look at:", index_date)
+    print("\ndate of index to look at:", index_date)
     row = index_data[index_data['Date'] == index_date]
     index_duration = row.iloc[0]['Modified Duration'] # index duration is here
-    print("index_duration", index_duration)
+    print("\nindex_duration", index_duration)
 
     optimizer = Optimizer(data, index_duration) # create optimizer using data on that date, and the index duration
     weights = optimizer.get_weights()
-    print("weights", weights)
+    print("\nweights", weights)
 
     non_zero_weights = [w for w in weights if w > 0]
-    print("non-zero weights", non_zero_weights)
-    print("num non-zero weights", len(non_zero_weights))
-    print("sum of weghts", np.sum(non_zero_weights)) # Less than 1 because we filtered out miniscule weights in Optimizer
+    print("\nnon-zero weights", non_zero_weights)
+    print("\nnumber of non-zero weights", len(non_zero_weights))
+    print("\nsum of weghts", np.sum(non_zero_weights)) # Less than 1 because we filtered out miniscule weights in Optimizer
+
+    print("\nDuration of portfolio:", np.dot(data['Modified_Duration'], weights))
+    print("\nIspread of portfolio", np.dot(data['Ispread'], weights))
+    print("\n\n")
+    print("modified dataframe in optimizer (two distance columns and scaled Ispread column added)")
+    print(optimizer.data)
