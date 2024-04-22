@@ -8,7 +8,7 @@ from datetime import datetime
 import time
 
 class Optimizer:
-    ''' Built to work with data from one date. Select the date first then instantiate the optimizer with it
+    ''' Built to work with data from one date. Slice data on one data first, then use it to instantiate the optimizer
     '''
     def __init__(self, data, index_duration):
             self.data = data
@@ -20,10 +20,9 @@ class Optimizer:
 
     def run_regression(self):
         '''
-        returns slope and intercept of regression of Ispread vs Model_Rank
+        returns slope and intercept of regression of Ispread (y) vs Model_Rank (x)
         y = mx + b
         '''            
-
         y = self.data['Ispread_scaled']
         X = self.data[['Model_Rank']].copy()
         X['Intercept'] = 1 # create intercept column
@@ -36,15 +35,15 @@ class Optimizer:
     def distance(self, p, q, m, b):
         '''
         computes orthogonal distance from point (p,q) to the line y = mx + b
+        using formula (mp - q + b)/sqrt(m^2+1)
         '''
         return np.abs(m*p - q + b) / math.sqrt(m**2 + 1)
 
     def compute_distances(self):
         '''
-        calculates orthogonal distance from (p,q) to regression line
-        using formula (mp - q + b)/sqrt(m^2+1)
-        Will be selecting bonds with the maximum distance.
-        Appends two columns to the global dataframe, Distance and Filtered_Distance, and returns it for good measure
+        calculates orthogonal distance from each bond to regression line
+        Appends two columns to the global dataframe, Distance and Filtered_Distance, then returns the dataframe
+        will be selecting bonds with the maximum Filtered_Distance.
         '''
 
         if 'Distance' in self.data.columns:
@@ -91,9 +90,7 @@ class Optimizer:
 
         # Initial guess for weights
         initial_guess = np.ones(len(distances)) / len(distances)
-
-        # Define bounds for weights (0 to 1)
-        bounds = [(0, 1)] * len(distances)
+        bounds = [(0, 1)] * len(distances) # all weights positive
 
         # Define constraints
         constraints = ({'type': 'eq', 'fun': weight_sum_constraint},
@@ -105,7 +102,7 @@ class Optimizer:
                           x0=initial_guess,
                           method = 'SLSQP',
                           constraints=constraints,
-                          tol = 0.001,
+                          tol = 0.001, # decreaing tolerance -> better results but more runtime
                           bounds = bounds,
                           options = {'maxiter': 100000000}) # increase number to increase accuracy of optimizer
 
@@ -125,9 +122,7 @@ def year_fraction(date1, date2): # computes difference between two dates in year
 
     return years
 
-
 if __name__ == "__main__":
-    
     print(year_fraction('12/31/2023', '10/15/2033')) # testing year fraction method
 
     data = pd.read_csv('Rank_Model_Residual_Duration.csv')
