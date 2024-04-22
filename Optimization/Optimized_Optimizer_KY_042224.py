@@ -114,9 +114,9 @@ class Optimizer:
                           x0=initial_guess,
                           method = 'SLSQP',
                           constraints=constraints,
-                          tol = 0.01, # decreaing tolerance -> better results but more runtime
+                          tol = 0.00001, # decreaing tolerance -> better results but more runtime
                           bounds = bounds,
-                          options = {'maxiter': 10000}) # increase number to increase accuracy of optimizer
+                          options = {'maxiter': 10000000}) # increase number to increase accuracy of optimizer
 
         # Extract optimal weights
         weights = result.x
