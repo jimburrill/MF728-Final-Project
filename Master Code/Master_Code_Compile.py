@@ -39,6 +39,12 @@ bond_ratings = {
     "C": 24
 }
 
+SLOPE_COEFFICIENT = 20
+# steepens regression line's slope by this factor before calculating distance to line, thus taking rank into account
+# 1 < SLOPE_COEFFICIENT < inf
+# 1: doesn't look at rank at all, only residual
+# inf: looks only at rank, no residual consideration at all
+
 def coupon_payment_dates(single_bond_data_df, oldest_date):
     '''Take in a dataframe contianing the data for a single bond. Calculate all of the coupon payment dates starting at
        the maturity date, until the begining of the data frame'''
@@ -294,10 +300,12 @@ Optimization
 class Optimizer:
     ''' Built to work with data from one date. Slice data on one data first, then use it to instantiate the optimizer
     '''
+    global SLOPE_COEFFICIENT
+
     def __init__(self, data, index_duration):
             self.data = data
             self.index_duration = index_duration
-
+        
             col = self.data['Ispread']
             self.data['Ispread_scaled'] = (col - col.mean()) * (self.data['Model_Rank'].std()/col.std()) + col.mean() # subtract out mean, fix standard deviation, add mean back
             # make 'Ispread' have the same standard deviation as 'Model_rank,' equalizing importance. Can be optimizer later through backtest
@@ -339,7 +347,7 @@ class Optimizer:
         for i in range(len(self.data.index)):
             x = self.data.iloc[i]['Model_Rank']
             y = self.data.iloc[i]['Ispread_scaled']
-            distance = self.distance(x, y, m, b)
+            distance = self.distance(x, y, m * SLOPE_COEFFICIENT, b)
             distances.append(distance)
         self.data['Distance'] = pd.Series(distances, index = self.data.index) # append column
 
