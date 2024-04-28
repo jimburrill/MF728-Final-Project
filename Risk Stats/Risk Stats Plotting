@@ -1,0 +1,51 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+
+portfolio = pd.read_csv('Updated_Portfolio_Data_Quarterly.csv')  
+portfolio_no_cost = pd.read_csv('Updated_Portfolio_Data_NoTransactionCosts_Quarterly.csv')  
+ig_index = pd.read_csv('IG_Index_Data_Monthly_Updated.csv')  
+hy_index = pd.read_csv('Updated_HY_Index_Data_Monthly.csv') 
+
+def annualized_return(df, column='Excess Returns', period='monthly'):
+    if period == 'monthly':
+        return np.power(1 + df[column].mean(), 12) - 1
+    elif period == 'quarterly':
+        return np.power(1 + df[column].mean(), 4) - 1
+    else:
+        raise ValueError("Period must be either 'monthly' or 'quarterly'.")
+
+portfolio['Annualized Return'] = annualized_return(portfolio, period='quarterly')
+portfolio_no_cost['Annualized Return'] = annualized_return(portfolio_no_cost, period='quarterly')
+ig_index['Annualized Return'] = annualized_return(ig_index, period='monthly')
+hy_index['Annualized Return'] = annualized_return(hy_index, period='monthly')
+
+metrics = ['Annualized Return', 'Sharpe Ratio', 'Volatility', 'Max Drawdown', '5% VaR', '1% VaR']
+datasets = ['Portfolio', 'Portfolio No Cost', 'IG Index', 'HY Index']
+colors = ['blue', 'green', 'orange', 'red']  
+
+for metric in metrics:
+    plt.figure(figsize=(10, 6)) 
+    means_for_metric = [portfolio[metric].mean(), portfolio_no_cost[metric].mean(),
+                        ig_index[metric].mean(), hy_index[metric].mean()]
+
+    bars = []  
+    for i, mean in enumerate(means_for_metric):
+        bar = plt.bar(i, mean, color=colors[i], label=datasets[i])
+        bars.append(bar)
+
+    plt.title(metric, fontsize=14)  
+    plt.xticks(range(len(datasets)), datasets, fontsize=12) 
+    plt.yticks(fontsize=12) 
+
+    plt.gca().yaxis.set_major_formatter(ticker.PercentFormatter(xmax=1))
+
+    for bar in bars:
+        for rect in bar:
+            height = rect.get_height()
+            plt.text(rect.get_x() + rect.get_width() / 1.5 , height, f'{height:.2%}', ha='center', va='bottom', fontsize=10)
+
+    plt.legend()  
+    plt.tight_layout()  
+    plt.show()
