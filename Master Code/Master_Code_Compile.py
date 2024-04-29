@@ -44,13 +44,15 @@ SLOPE_COEFFICIENT = 0.6
 # 0 < SLOPE_COEFFICIENT < inf
 # 0: prefers lower rank
 # 1: doesn't look at rank at all, only residual
-# inf: looks only at rank, no residual consideration at all
+# inf: looks at rank only, no residual consideration whatsoever
 
 #returns with various values of SLOPE_COEFFICIENT:
-# 0.6 - 
+
+
+# 0.6 - 74.81%
 # 0.8 - 75.19%
 # 1 - 42.23 % 
-# 2 - 40.07 %
+# 2 - 40.07 %       
 # 20 - 23.8% 
 
 def coupon_payment_dates(single_bond_data_df, oldest_date):
