@@ -531,7 +531,7 @@ def Backtest():
         portfolio_returns.append(portfolio_returns_date_i)
     portfolio_returns_df = pd.DataFrame({"Date": df['Date'].unique(), "Portfolio Returns":portfolio_returns})
     portfolio_returns_df['Cumulative Return'] = (1+portfolio_returns_df['Portfolio Returns']).cumprod()-1
-    portfolio_returns_df.to_csv("Master_Portfolio_Returns.csv",index=None)
+    portfolio_returns_df.to_csv(f"Master_Portfolio_Returns_coef{SLOPE_COEFFICIENT}.csv",index=None)
     print("Portfolio Return: ",str(round(portfolio_returns_df['Cumulative Return'].iloc[-1]*100,2))+"%")
     print("Time to run script: ",round(time.time() - start_time,3))
     print("")
