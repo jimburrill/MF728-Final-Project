@@ -48,7 +48,7 @@ SLOPE_COEFFICIENT = 0.5
 
 #returns with various values of SLOPE_COEFFICIENT:
 # 0.5 - all filters kept in model_rank method - 77.37%
-# 0.5 - removed Bond_Rating and Ispread filters too in model_rank method - 109.26%
+# 0.5 - removed Bond_Rating and Ispread filters in model_rank method - 109.26%
 # 0.6 - 74.81%
 # 0.8 - 75.19%
 # 1 - 42.23 % 
